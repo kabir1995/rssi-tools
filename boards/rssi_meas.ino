@@ -19,17 +19,12 @@
 const char* ssid = "ESP-Access-Point";
 const char* password = "password1234";
 
-//String incoming;
-//  if (Serial.available() > 0) {
-//    // read the incoming:
-//    incoming = Serial.readString();
-//    // say what you got:
-//    ssid = incoming.c_str();
-//    Serial.println(ssid);
-//  }
+char incoming;
+bool flag;
 
 void setup() {
   Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
   connectWiFi();
 }
 
@@ -41,16 +36,42 @@ void loop() {
       connectWiFi();
   }
 
-  wifiStrength = WiFi.RSSI(); 
-  delay(delay_time);
-  Serial.println(wifiStrength);
+  if (Serial.available() > 0) {
+    incoming = Serial.read();
+    if (incoming == 0x41){
+      Serial.println(0x61);
+      flag = true;
+    }
+  }
+  while(flag){
+    wifiStrength = WiFi.RSSI(); 
+    delay(delay_time);
+    Serial.println(wifiStrength);
+    if (Serial.available() > 0) {
+      incoming = Serial.read();
+      if (incoming == 0x41){
+        Serial.println(0x61);
+        flag = true;
+      }
+      if (incoming == 0x51){
+        Serial.println(0x71);
+        flag = false;
+      }
+    }
+  }
 }
 
 void connectWiFi(){
   while (WiFi.status() != WL_CONNECTED){
       WiFi.begin(ssid, password);
-      Serial.print(".");
-      delay(3000);
+      digitalWrite(LED_BUILTIN, HIGH); 
+      delay(750);                       
+      digitalWrite(LED_BUILTIN, LOW);   
+      delay(750);  
+      digitalWrite(LED_BUILTIN, HIGH); 
+      delay(750);                       
+      digitalWrite(LED_BUILTIN, LOW);   
+      delay(750);  
   }
-  Serial.println("Connected");
+  digitalWrite(LED_BUILTIN, LOW);   
 }
