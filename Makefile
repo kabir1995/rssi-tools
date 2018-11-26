@@ -5,19 +5,17 @@ clean:
 	rm -rf .cache/ build/ dist/ .mypy_cache/ *.egg-info/ *.log 
 	find ./* -name '__pycache__' -type d | xargs -I@ rm -rf @
 
-build:
-	pyinstaller --onefile gui/test.py
+build-linux:
+	pyinstaller --onefile gui/main.py
 	mv dist/test rssiTools
 
-	
+build-windows:
+	echo "no windows for you"
 
+gui:
+	python gui/main.py
 
-# Docker 
+build-mac:
+	echo "no mac for you"
 
-docker-build:
-	docker build -t rssi_tools:latest .
-
-docker-run:
-	docker run --rm rssi_tools:latest "test.py"
-
-.PHONY: install clean deploy
+.PHONY: install clean deploy gui 
