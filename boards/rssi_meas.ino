@@ -1,50 +1,77 @@
+/*
+  ESP8266 / ESP32 RSSI Measuring tool
+*/
+
+//  works better on the ESP8266   
+
+// please define which ESP is being used 
+//#define ESP32       //uncomment this line if ESP32
+#define ESP8266     //uncomment this line if ESP8266
+
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#endif
+
+#ifdef ESP32 
 #include <WiFi.h>
+#endif
 
-char* ssid = "ruanito";
-const char* password = "fratagay";
+const char* ssid = "ESP-Access-Point";
+const char* password = "password1234";
 
-int measurementNumber = 0;
+char incoming;
+bool flag;
 
 void setup() {
   Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
   connectWiFi();
 }
 
-// the loop function runs over and over again forever
 void loop() {
-    const int numberPoints = 1;
-    float wifiStrength;
+  signed char wifiStrength;
+  int delay_time = 20;
+      
+  if (WiFi.status() != WL_CONNECTED) { 
+      connectWiFi();
+  }
 
-    if (WiFi.status() != WL_CONNECTED) { 
-        connectWiFi();
+  if (Serial.available() > 0) {
+    incoming = Serial.read();
+    if (incoming == 0x41){
+      Serial.write(0x61);
+      flag = true;
     }
-
-    wifiStrength = getStrength(numberPoints); 
-    measurementNumber++;
-
-    Serial.println(wifiStrength);
+  }
+  while(flag){
+    wifiStrength = WiFi.RSSI(); 
+    delay(delay_time);
+    Serial.write(wifiStrength);
+    if (Serial.available() > 0) {
+      incoming = Serial.read();
+      if (incoming == 0x41){
+        Serial.write(0x61);
+        flag = true;
+      }
+      if (incoming == 0x51){
+        Serial.write(0x71);
+        flag = false;
+      }
+    }
+  }
 }
 
 void connectWiFi(){
-
-    while (WiFi.status() != WL_CONNECTED){
-        WiFi.begin(ssid, password);
-        delay(3000);
-    }
-
-    // Show the user a connection is successful.
-    Serial.println("Connected");
-}
-
-int getStrength(int points){
-    long rssi = 0;
-    long averageRSSI=0;
-    
-    for (int i=0;i < points;i++){
-        rssi += WiFi.RSSI();
-        delay(80);
-    }
-
-    averageRSSI=rssi/points;
-    return averageRSSI;
+  while (WiFi.status() != WL_CONNECTED){
+      WiFi.begin(ssid, password);
+      digitalWrite(LED_BUILTIN, HIGH); 
+      delay(750);                       
+      digitalWrite(LED_BUILTIN, LOW);   
+      delay(750);  
+      digitalWrite(LED_BUILTIN, HIGH); 
+      delay(750);                       
+      digitalWrite(LED_BUILTIN, LOW);   
+      delay(750);  
+  }
+  digitalWrite(LED_BUILTIN, LOW);   
 }
