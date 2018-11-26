@@ -29,7 +29,7 @@ void setup() {
 }
 
 void loop() {
-  int wifiStrength;
+  signed char wifiStrength;
   int delay_time = 20;
       
   if (WiFi.status() != WL_CONNECTED) { 
@@ -39,22 +39,22 @@ void loop() {
   if (Serial.available() > 0) {
     incoming = Serial.read();
     if (incoming == 0x41){
-      Serial.println(0x61);
+      Serial.write(0x61);
       flag = true;
     }
   }
   while(flag){
     wifiStrength = WiFi.RSSI(); 
     delay(delay_time);
-    Serial.println(wifiStrength);
+    Serial.write(wifiStrength);
     if (Serial.available() > 0) {
       incoming = Serial.read();
       if (incoming == 0x41){
-        Serial.println(0x61);
+        Serial.write(0x61);
         flag = true;
       }
       if (incoming == 0x51){
-        Serial.println(0x71);
+        Serial.write(0x71);
         flag = false;
       }
     }
