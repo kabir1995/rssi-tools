@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import random
 from serialModule import SerialClass
 import time
- 
+import threading
 
 class App(w.QMainWindow):
  
@@ -83,20 +83,26 @@ class App(w.QMainWindow):
         self.show()
 
     def connect_to_board(self, port):
-        if self.s.handshake():
-            msg = "Connected to radio!"
-            self.connected = True
-        else:
+        try:
+            self.s.connected(port)
+            if self.s.handshake():
+                msg = "Connected to radio!"
+                self.connected = True
+            else:
+                msg = "Connection Failed!"
+                self.connected = False
+        except:
             msg = "Connection Failed!"
             self.connected = False
         w.QMessageBox.about(self, "Connection Status", msg)
 
     def experiment(self):
         # Dealing with input
+        self.m.clear()
         try:
-            samples = self._get_samples()
-            sample_rate = self._get_sample_rate()
-            distance = self._get_distance()
+            self._get_samples()
+            self._get_sample_rate()
+            self._get_distance()
             self._test_connection()
         except: 
             w.QMessageBox.about(self, "Error", self.error_msg)
@@ -104,21 +110,25 @@ class App(w.QMainWindow):
 
         print("Starting experiment")
         print("{} samples, one every {} ms, at {} meters".format(
-            samples, sample_rate, distance)
+            self.samples, self.sample_rate, self.distance)
         )
 
-        filename = "{}s_{}ms_{}m.txt".format(
-            samples, sample_rate, distance
+        self.filename = "{}s_{}ms_{}m.txt".format(
+            self.samples, self.sample_rate, self.distance
         )
 
+        threading.Thread(target=self._experiment).start()
+
+
+    def _experiment(self):
         # Experiment
-        for n in range(1, samples+1):
-            self.append_to_file(self.s.readSerial(), filename)
-            self.m.plot(filename)
-            self.show()
-            time.sleep(sample_rate/1000)
-
+        for n in range(1, self.samples+1):
+            self.append_to_file(self.s.readSerial(), self.filename)
+            self.m.plot(self.filename)
+            time.sleep(self.sample_rate/1000)
         w.QMessageBox.about(self, "Experiment Status", "Finished!")
+
+
 
     def append_to_file(self, data, filename):
         with open(filename, "a+") as f:
@@ -127,36 +137,33 @@ class App(w.QMainWindow):
     # Helper funcions
     def _get_samples(self):
         try:
-            samples = int(self.li_samples.text())
+            self.samples = int(self.li_samples.text())
         except:
             self.error_msg = "Samples must be integer!"
             raise
-        if samples <= 0:
+        if self.samples <= 0:
             self.error_msg = "Samples must be greater than zero!"
             raise
-        return samples
 
     def _get_sample_rate(self):
         try:
-            sample_rate = int(self.l_srate.text())
+            self.sample_rate = int(self.l_srate.text())
         except:
             self.error_msg = "Sample Rate must be integer!"
             raise
-        if sample_rate < 20:
+        if self.sample_rate < 20:
             self.error_msg = "Sample Rate must greater than 20 ms!"
             raise
-        return sample_rate
 
     def _get_distance(self):
         try:
-            distance = float(self.l_distance.text())
+            self.distance = float(self.l_distance.text())
         except:
             self.error_msg = "Distance must be float!"
             raise
-        if distance <= 0:
+        if self.distance <= 0:
             self.error_msg = "Distance must greater than zero!"
             raise
-        return distance
 
     def _test_connection(self):
         if not self.connected:
@@ -167,7 +174,7 @@ class PlotCanvas(FigureCanvas):
  
     def __init__(self, parent=None, width=5, height=4):
         fig = Figure(figsize=(width, height))
-        self.axes = fig.add_subplot(111)
+        self.ax = fig.add_subplot(111)
  
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
@@ -178,13 +185,16 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self) 
         #self.plot()
  
-    def plot(self, filename): 
-        print("plot")
-        ax = self.figure.add_subplot(111)
+    def plot(self, filename):
+        self.ax = self.figure.add_subplot(111)
         with open(filename) as f: 
             data = [int(x) for x in f.read().splitlines()] 
-        ax.plot(data, 'r-')
-        ax.set_title('RSSI samples')
-        ax.set_ylabel("RSSI [dBm]")
-        ax.set_xlabel("Samples")
+        self.ax.plot(data, 'r-')
+        self.ax.set_title('RSSI samples')
+        self.ax.set_ylabel("RSSI [dBm]")
+        self.ax.set_xlabel("Samples")
         self.draw()
+
+    def clear(self):
+        print("clear")
+        self.ax.plot([])
