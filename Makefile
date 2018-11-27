@@ -13,9 +13,12 @@ build-windows:
 	echo "no windows for you"
 
 gui:
-	python gui/main.py
+	python3 gui/main.py
 
 build-mac:
 	echo "no mac for you"
 
-.PHONY: install clean deploy gui 
+experiment:
+	jupyter notebook &
+
+.PHONY: install clean deploy gui experiment

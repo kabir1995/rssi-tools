@@ -2,3 +2,7 @@ matplotlib
 PyQt5
 pyserial
 pyinstaller
+jupyter
+pandas
+numpy
+scipy

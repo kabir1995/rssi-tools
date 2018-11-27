@@ -6,6 +6,10 @@ This is a tool for measuring the Received Signal Strength Indication(RSSI) of RF
 
 ## How to use
 
+Install the dependecies.
+`sudo apt install python-pip3`
+`make install`
+
 ### Setting up the boards
 
 On the 'boards' folder, ESPap.ino setups the Access Point, and rssi_meas.ino measures RSSI and sends to serial port.
@@ -22,12 +26,17 @@ Upload to the board.
 If ESP COM port is not connecting you might need to download this driver.
 
 For the ESP32
+
 https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers#windows
+
+
 For the ESP8266
+
 https://www.robocore.net/tutoriais/como-instalar-o-driver-do-nodemcu.html
 
 ### How to start a experiment
+Run `make experiment` and open the rssiTool.ipynb file
 
-### Analysing the data
+Execute the cells 
 
-## Contributing
+Output will be at `data/` folder
