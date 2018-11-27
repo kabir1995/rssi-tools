@@ -85,12 +85,8 @@ class App(w.QMainWindow):
     def connect_to_board(self, port):
         try:
             self.s.connect(port)
-            if self.s.handshake():
-                msg = "Connected to radio!"
-                self.connected = True
-            else:
-                msg = "Connection Failed!"
-                self.connected = False
+            msg = "Connected to radio!"
+            self.connected = True
         except:
             msg = "Connection Failed!"
             self.connected = False
@@ -121,18 +117,22 @@ class App(w.QMainWindow):
 
 
     def _experiment(self):
+        list_rssi = []
         # Experiment
         for n in range(1, self.samples+1):
-            self.append_to_file(self.s.readSerial(), self.filename)
-            self.m.plot(self.filename)
+            list_rssi.append(self.s.readSerial())
+            self.m.plot(list_rssi)
             time.sleep(self.sample_rate/1000)
+        self.append_to_file(list_rssi, self.filename)
         w.QMessageBox.about(self, "Experiment Status", "Finished!")
 
 
 
     def append_to_file(self, data, filename):
-        with open(filename, "a+") as f:
-            f.write(str(data)+"\r\n")
+        print("Writing to " + filename)
+        with open(filename, "w") as f:
+            for d in data:
+                f.write(str(d)+"\r\n")
 
     # Helper funcions
     def _get_samples(self):
@@ -183,12 +183,10 @@ class PlotCanvas(FigureCanvas):
                 w.QSizePolicy.Expanding,
                 w.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self) 
-        #self.plot()
  
-    def plot(self, filename):
+    def plot(self, data):
         self.ax = self.figure.add_subplot(111)
-        with open(filename) as f: 
-            data = [int(x) for x in f.read().splitlines()] 
+
         self.ax.plot(data, 'r-')
         self.ax.set_title('RSSI samples')
         self.ax.set_ylabel("RSSI [dBm]")
