@@ -84,7 +84,7 @@ class App(w.QMainWindow):
 
     def connect_to_board(self, port):
         try:
-            self.s.connected(port)
+            self.s.connect(port)
             if self.s.handshake():
                 msg = "Connected to radio!"
                 self.connected = True
