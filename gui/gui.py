@@ -195,4 +195,4 @@ class PlotCanvas(FigureCanvas):
 
     def clear(self):
         print("clear")
-        self.ax.plot([])
+        self.ax.remove()
