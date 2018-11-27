@@ -7,7 +7,7 @@ clean:
 
 build-linux:
 	pyinstaller --onefile gui/main.py
-	mv dist/test rssiTools
+	mv dist/main rssiTools
 
 build-windows:
 	echo "no windows for you"

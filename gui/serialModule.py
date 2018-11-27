@@ -25,20 +25,10 @@ class SerialClass():
             stopbits=serial.STOPBITS_TWO,
             bytesize=serial.EIGHTBITS
         )
-        
+
     def disconnect(self):
         self.uart.close()
 
-    def handshake(self):
-        ack = False
-        
-        self.uart.write(bytes('A','utf-8'))
-        time.sleep(1)
-        
-        if(self.uart.read(1) == b'a'):
-            ack = True
-                
-        return ack
 
     def readSerial(self):
         return int.from_bytes(self.uart.read(1), byteorder='big', signed=True)
